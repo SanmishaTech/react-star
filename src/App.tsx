@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import AuthLayout from './layouts/AuthLayout';
 import MainLayout from './layouts/MainLayout';
 import Login from './modules/Auth/Login';
+import Register from './modules/Auth/Register';
 import ForgotPassword from './modules/Auth/ForgotPassword';
 import ResetPassword from './modules/Auth/ResetPassword';
 import Dashboard from './modules/Dashboard/DashboardPage';
@@ -23,6 +24,7 @@ const App = () => {
         <Routes>
           <Route element={<AuthLayout />}>
             <Route path="/" element={<Login />} />
+            <Route path="/register" element={<Register />} />
             <Route path="/forgot-password" element={<ForgotPassword />} />
             <Route path="/reset-password/:token" element={<ResetPassword />} />
             {/* Add other auth routes here */}
