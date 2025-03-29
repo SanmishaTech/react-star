@@ -14,29 +14,72 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar"
 import { Outlet } from "react-router-dom"
+import { useState, useEffect } from "react"
+import { Sun, Moon } from "lucide-react"
 
 export default function MainLayout() {
+  const [isDarkMode, setIsDarkMode] = useState(false)
+
+  // Toggle dark mode
+  const toggleDarkMode = () => {
+    const html = document.documentElement
+    if (html.classList.contains("dark")) {
+      html.classList.remove("dark")
+      localStorage.setItem("theme", "light")
+      setIsDarkMode(false)
+    } else {
+      html.classList.add("dark")
+      localStorage.setItem("theme", "dark")
+      setIsDarkMode(true)
+    }
+  }
+
+  // Load theme from localStorage
+  useEffect(() => {
+    const savedTheme = localStorage.getItem("theme")
+    if (savedTheme === "dark") {
+      document.documentElement.classList.add("dark")
+      setIsDarkMode(true)
+    }
+  }, [])
+
   return (
     <SidebarProvider>
       <AppSidebar />
       <SidebarInset>
-        <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
-          <div className="flex items-center gap-2 px-4">
-            <SidebarTrigger className="-ml-1" />
-            <Separator orientation="vertical" className="mr-2 h-4" />
-            <Breadcrumb>
-              <BreadcrumbList>
-                <BreadcrumbItem className="hidden md:block">
-                  <BreadcrumbLink href="#">
-                    Building Your Application
-                  </BreadcrumbLink>
-                </BreadcrumbItem>
-                <BreadcrumbSeparator className="hidden md:block" />
-                <BreadcrumbItem>
-                  <BreadcrumbPage>Data Fetching</BreadcrumbPage>
-                </BreadcrumbItem>
-              </BreadcrumbList>
-            </Breadcrumb>
+        <header className="sticky top-0 z-50 flex h-16 shrink-0 items-center gap-2 bg-white dark:bg-gray-900 shadow-md transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
+          <div className="flex items-center gap-2 px-4 w-full justify-between">
+            {/* Sidebar Trigger and Breadcrumb */}
+            <div className="flex items-center gap-2">
+              <SidebarTrigger className="-ml-1" />
+              <Separator orientation="vertical" className="mr-2 h-4" />
+              <Breadcrumb>
+                <BreadcrumbList>
+                  <BreadcrumbItem className="hidden md:block">
+                    <BreadcrumbLink href="#">
+                      Building Your Application
+                    </BreadcrumbLink>
+                  </BreadcrumbItem>
+                  <BreadcrumbSeparator className="hidden md:block" />
+                  <BreadcrumbItem>
+                    <BreadcrumbPage>Data Fetching</BreadcrumbPage>
+                  </BreadcrumbItem>
+                </BreadcrumbList>
+              </Breadcrumb>
+            </div>
+
+            {/* Dark Mode Switcher */}
+            <button
+              onClick={toggleDarkMode}
+              className="flex items-center justify-center w-10 h-10 rounded-full bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer"
+              aria-label="Toggle Dark Mode"
+            >
+              {isDarkMode ? (
+                <Moon /> // Moon icon for dark mode
+              ) : (
+                <Sun /> // Moon icon for dark mode
+              )}
+            </button>
           </div>
         </header>
         <Outlet />

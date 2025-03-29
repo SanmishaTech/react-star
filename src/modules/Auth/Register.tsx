@@ -9,7 +9,7 @@ import { PasswordInput } from '@/components/ui/password-input';
 import { useNavigate } from 'react-router-dom';
 import { post } from '@/services/apiService';
 import { appName } from '@/config';
-import { LoaderCircle } from 'lucide-react'; // Import the spinner icon
+import { LoaderCircle } from 'lucide-react'; // Spinner icon
 import { toast } from 'sonner';
 
 type RegisterFormInputs = {
@@ -55,7 +55,7 @@ const Register = () => {
   const onSubmit: SubmitHandler<RegisterFormInputs> = async (data) => {
     setIsLoading(true);
     try {
-      const response = await post('/auth/register', data);
+      await post('/auth/register', data);
       toast.success('Registration successful! Please log in.');
       navigate('/'); // Redirect to login page
     } catch (error: any) {
@@ -100,32 +100,31 @@ const Register = () => {
             {...register('email')}
             required
           />
+          <p data-slot="form-description" className="text-muted-foreground text-sm">This is your public display name.</p>          
           {errors.email && (
-            <span className='text-red-500'>{errors.email.message}</span>
+            <p className="text-destructive text-sm">{errors.email.message}</p>
           )}
         </div>
         <div className='grid gap-2'>
           <Label htmlFor='password'>Password</Label>
           <PasswordInput
             id='password'
-            type="password"
             {...register('password')}
             required
           />
           {errors.password && (
-            <span className='text-red-500'>{errors.password.message}</span>
+            <p className="text-destructive text-sm">{errors.password.message}</p>
           )}
         </div>
         <div className='grid gap-2'>
           <Label htmlFor='confirmPassword'>Confirm Password</Label>
           <PasswordInput
             id='confirmPassword'
-            type="password"
             {...register('confirmPassword')}
             required
           />
           {errors.confirmPassword && (
-            <span className='text-red-500'>{errors.confirmPassword.message}</span>
+            <p className="text-destructive text-sm">{errors.confirmPassword.message}</p>
           )}
         </div>
         <Button type='submit' className='w-full' disabled={isLoading}>

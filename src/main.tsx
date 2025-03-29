@@ -3,7 +3,10 @@ import { createRoot } from 'react-dom/client'
 import './index.css'
 import App from './App.tsx'
 
-createRoot(document.getElementById('root')!).render(
+// const html = document.documentElement;
+// html.classList.add('dark'); // Add the 'dark' class to the <html> element
+
+createRoot(document.getElementById('root')!).render(  
   <StrictMode>
     <App />
   </StrictMode>,

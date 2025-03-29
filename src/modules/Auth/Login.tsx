@@ -104,7 +104,6 @@ const Login = () => {
           </div>
           <PasswordInput
             id='password'
-            type="password"
             {...register('password')}
             required
           />
