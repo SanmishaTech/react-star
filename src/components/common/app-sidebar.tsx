@@ -64,8 +64,8 @@ const initialData = {
       isActive: true,
       items: [
         {
-          title: "History",
-          url: "#",
+          title: "Users",
+          url: "/users",
         },
         {
           title: "Starred",
