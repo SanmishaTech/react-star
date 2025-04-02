@@ -1,61 +1,36 @@
 "use client"
 
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog"
-import { Button } from "@/components/ui/button"
-import { useState } from "react"
+import React from 'react';
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 
 interface ConfirmDialogProps {
-  title: string
-  description: string
-  onConfirm: () => void
-  onCancel?: () => void
-  trigger: React.ReactNode
+    isOpen: boolean;
+    title: string;
+    description: string;
+    onCancel: () => void;
+    onConfirm: () => void;
 }
 
-export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
-  title,
-  description,
-  onConfirm,
-  onCancel,
-  trigger,
-}) => {
-  const [open, setOpen] = useState(false)
+export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({ isOpen, title, description, onCancel, onConfirm }) => {
+    if (!isOpen) return null;
 
-  const handleConfirm = () => {
-    onConfirm()
-    setOpen(false)
-  }
-
-  const handleCancel = () => {
-    if (onCancel) onCancel()
-    setOpen(false)
-  }
-
-  return (
-    <Dialog open={open} onOpenChange={setOpen}>
-      <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
-        </DialogHeader>
-        <DialogFooter>
-          <Button variant="secondary" onClick={handleCancel}>
-            Cancel
-          </Button>
-          <Button onClick={handleConfirm}>
-            Confirm
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  )
-}
+    return (
+        <Dialog open={isOpen} onOpenChange={(open) => !open && onCancel()}>
+            <DialogContent>
+                <DialogHeader>
+                    <DialogTitle>{title}</DialogTitle>
+                    <DialogDescription>{description}</DialogDescription>
+                </DialogHeader>
+                <DialogFooter>
+                    <Button variant="secondary" onClick={onCancel}>
+                        Cancel
+                    </Button>
+                    <Button variant="destructive" onClick={onConfirm}>
+                        Confirm
+                    </Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
+    );
+};

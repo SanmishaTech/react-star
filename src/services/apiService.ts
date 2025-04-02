@@ -21,6 +21,9 @@ export const get = async (url: string, params?: any) => {
     const response = await api.get(url, { params });
     return response.data;
   } catch (error: any) {
+    if (error.response?.status === 401) {      
+      window.location.href = '/';
+    }
     throw { status: error.response?.status, message: error.response?.data?.errors?.message || 'Request failed' };
   }
 };

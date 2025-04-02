@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
-import { get, post } from "@/services/apiService";
+import { get, post, put } from "@/services/apiService";
 
 type UserFormInputs = {
   name: string;
@@ -76,7 +76,7 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
         await post("/users", data);
         toast.success("User created successfully");
       } else {
-        await post(`/users/${id}`, data);
+        await put(`/users/${id}`, data);
         toast.success("User updated successfully");
       }
       navigate("/users");
