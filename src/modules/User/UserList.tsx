@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Button, Input } from '@/components/ui';
 import {
     Select,
@@ -7,6 +7,7 @@ import {
     SelectItem,
     SelectValue,
 } from '@/components/ui/select';
+import MultipleSelector, { Option } from '@/components/common/multiple-selector'; // Import MultipleSelector from common folder
 import { Card, CardContent } from '@/components/ui/card';
 import {
     Table,
@@ -33,18 +34,11 @@ import {
     Plus,
 } from 'lucide-react';
 import ConfirmDialog from '@/components/common/confirm-dialog';
+import { saveAs } from 'file-saver'; // Install file-saver for downloading files
 
-type User = {
-    id: number;
-    name: string;
-    email: string;
-    role: string;
-    lastLogin: string | null;
-    active: boolean;
-};
-
-const fetchUsers = async (page: number, sortBy: string, sortOrder: string, search: string, active: string) => {
-    const response = await get(`/users?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}&search=${search}&active=${active}`);
+const fetchUsers = async (page: number, sortBy: string, sortOrder: string, search: string, active: string, roles: string[]) => {
+    const rolesQuery = roles.length > 0 ? `&roles=${roles.join(',')}` : '';
+    const response = await get(`/users?page=${page}&sortBy=${sortBy}&sortOrder=${sortOrder}&search=${search}&active=${active}${rolesQuery}`);
     return response;
 };
 
@@ -54,16 +48,35 @@ const UserList = () => {
     const [sortOrder, setSortOrder] = useState('asc'); // Default sort order
     const [search, setSearch] = useState(''); // Search query
     const [active, setActive] = useState('all'); // Active filter (all, true, false)
+    const [roles, setRoles] = useState<string[]>([]); // Selected roles for filtering
+    const [availableRoles, setAvailableRoles] = useState<Option[]>([]); // Roles fetched from API
     const [showConfirmation, setShowConfirmation] = useState(false);
     const [userToDelete, setUserToDelete] = useState<number | null>(null);
     const navigate = useNavigate();
     const recordsPerPage = 10;
 
+    // Fetch roles from API
+    useEffect(() => {
+        const fetchRoles = async () => {
+            try {
+                const rolesData = await get('/roles');
+                const formattedRoles: Option[] = Object.entries(rolesData.roles).map(([key, value]) => ({
+                    label: value,
+                    value: value,
+                })); // Map roles to Option format
+                setAvailableRoles(formattedRoles);
+            } catch (error: any) {
+                toast.error('Failed to fetch roles');
+            }
+        };
+
+        fetchRoles();
+    }, []);
+
     // Fetch users using react-query
     const { data, isLoading, isError, refetch } = useQuery({
-        queryKey: ['users', currentPage, sortBy, sortOrder, search, active],
-        queryFn: () => fetchUsers(currentPage, sortBy, sortOrder, search, active),
-        keepPreviousData: true, // Keeps previous data while fetching new data
+        queryKey: ['users', currentPage, sortBy, sortOrder, search, active, roles],
+        queryFn: () => fetchUsers(currentPage, sortBy, sortOrder, search, active, roles),
     });
 
     const users = data?.users || [];
@@ -120,6 +133,45 @@ const UserList = () => {
         setCurrentPage(1); // Reset to the first page
     };
 
+    // Handle role filter change
+    const handleRoleChange = (selectedRoles: Option[]) => {
+        setRoles(selectedRoles.map((role) => role.value)); // Extract values from selected options
+        setCurrentPage(1); // Reset to the first page
+    };
+
+    // Function to export user data
+    const handleExport = async () => {
+        try {
+            // Safely encode query parameters
+            const rolesQuery = roles.length > 0 ? `roles=${encodeURIComponent(roles.join(','))}` : '';
+            const queryParams = [
+                `sortBy=${encodeURIComponent(sortBy)}`,
+                `sortOrder=${encodeURIComponent(sortOrder)}`,
+                `search=${encodeURIComponent(search)}`,
+                `active=${encodeURIComponent(active)}`,
+                rolesQuery,
+                `export=true`, // Ensure export=true is at the end
+            ]
+                .filter(Boolean) // Remove empty parameters
+                .join('&'); // Join parameters with '&'
+
+            const exportUrl = `/users?${queryParams}`;
+
+            // Fetch the Excel file using the updated get() function
+            const response = await get(exportUrl, null, { responseType: 'blob' });
+
+            // Trigger file download
+            const blob = new Blob([response.data], {
+                type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            });
+            saveAs(blob, 'users.xlsx'); // Save the file with a .xlsx extension
+            toast.success('User data exported successfully');
+        } catch (error) {
+            console.error('Export Error:', error);
+            toast.error('Failed to export user data');
+        }
+    };
+
     return (
         <div className="mt-2 p-6">
             <h1 className="text-2xl font-bold mb-6">User Management</h1>
@@ -140,7 +192,7 @@ const UserList = () => {
                             {/* Export Button */}
                             <Button
                                 variant="outline"
-                                onClick={() => console.log('Export clicked')}
+                                onClick={handleExport} // Attach export functionality
                             >
                                 <Download className="mr-2 h-4 w-4" />
                                 Export
@@ -154,7 +206,7 @@ const UserList = () => {
                         </Button>
                     </div>
 
-                    {/* Search and Filter */}
+                    {/* Search and Filters */}
                     <div className="flex gap-4 mb-4">
                         <Input
                             placeholder="Search users..."
@@ -172,6 +224,20 @@ const UserList = () => {
                                 <SelectItem value="false">Inactive</SelectItem>
                             </SelectContent>
                         </Select>
+                        {availableRoles.length > 0 ? ( // Ensure availableRoles is populated
+                            <MultipleSelector
+                                defaultOptions={availableRoles}
+                                selectedOptions={roles.map((role) => ({
+                                    label: role,
+                                    value: role,
+                                }))}
+                                onChange={handleRoleChange}
+                                placeholder="Filter by roles"
+                                className="w-1/3"
+                            />
+                        ) : (
+                            <div className="w-1/3 text-gray-500">Loading roles...</div> // Placeholder while roles are loading
+                        )}
                     </div>
                     <Separator className="mb-4" />
                     {isLoading ? (

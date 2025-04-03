@@ -16,15 +16,31 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-export const get = async (url: string, params?: any) => {
+export const get = async (url: string, params?: any, config?: any) => {
   try {
-    const response = await api.get(url, { params });
+    // Merge params and additional config (e.g., responseType)
+    const finalConfig = {
+      params,
+      ...config, // Include additional config like responseType
+    };
+
+    const response = await api.get(url, finalConfig);
+
+    // If responseType is 'blob', return the entire response object
+    if (config?.responseType === 'blob') {
+      return response; // Return the full response for binary data
+    }
+
+    // Otherwise, return response.data for JSON responses
     return response.data;
   } catch (error: any) {
-    if (error.response?.status === 401) {      
+    if (error.response?.status === 401) {
       window.location.href = '/';
     }
-    throw { status: error.response?.status, message: error.response?.data?.errors?.message || 'Request failed' };
+    throw {
+      status: error.response?.status,
+      message: error.response?.data?.errors?.message || 'Request failed',
+    };
   }
 };
 
