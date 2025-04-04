@@ -134,8 +134,6 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
     },
   });
 
-  console.log(updateUserMutation.isLoading);
-
   // Handle form submission
   const onSubmit: SubmitHandler<UserFormInputs> = (data) => {
     if (mode === "create") {
