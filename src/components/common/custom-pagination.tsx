@@ -1,4 +1,4 @@
-import * as React from "react"
+import * as React from "react";
 
 import {
   Pagination,
@@ -7,14 +7,22 @@ import {
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "@/components/ui/pagination"
+} from "@/components/ui/pagination";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CustomPaginationProps {
-  currentPage: number
-  totalPages: number
-  totalRecords: number
-  recordsPerPage: number
-  onPageChange: (page: number) => void
+  currentPage: number;
+  totalPages: number;
+  totalRecords: number;
+  recordsPerPage: number;
+  onPageChange: (page: number) => void;
+  onRecordsPerPageChange: (recordsPerPage: number) => void;
 }
 
 const CustomPagination: React.FC<CustomPaginationProps> = ({
@@ -23,48 +31,75 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
   totalRecords,
   recordsPerPage,
   onPageChange,
+  onRecordsPerPageChange,
 }) => {
-  const startRecord = (currentPage - 1) * recordsPerPage + 1
-  const endRecord = Math.min(currentPage * recordsPerPage, totalRecords)
+  const startRecord = (currentPage - 1) * recordsPerPage + 1;
+  const endRecord = Math.min(currentPage * recordsPerPage, totalRecords);
 
   return (
-    <div className="flex justify-between items-center mt-4">
+    <div className="flex flex-wrap justify-between items-center mt-4 gap-4">
       {/* Number of Records */}
       <div className="text-sm text-gray-600">
         Showing {startRecord} to {endRecord} of {totalRecords} records
       </div>
 
-      {/* Shadcn Pagination */}
-      <div>
-        <Pagination>
-          <PaginationContent>
-            <PaginationItem>
-              <PaginationPrevious
-                onClick={() => onPageChange(currentPage - 1)}
-                disabled={currentPage === 1}
-              />
-            </PaginationItem>
-            {Array.from({ length: totalPages }, (_, index) => (
-              <PaginationItem key={index}>
-                <PaginationLink
-                  isActive={currentPage === index + 1}
-                  onClick={() => onPageChange(index + 1)}
-                >
-                  {index + 1}
-                </PaginationLink>
-              </PaginationItem>
-            ))}
-            <PaginationItem>
-              <PaginationNext
-                onClick={() => onPageChange(currentPage + 1)}
-                disabled={currentPage === totalPages}
-              />
-            </PaginationItem>
-          </PaginationContent>
-        </Pagination>
+      {/* Records Per Page Selector */}
+      <div className="flex items-center gap-2">
+        <span className="text-sm text-gray-600">Records per page:</span>
+        <Select
+          value={recordsPerPage.toString()}
+          onValueChange={(value) => onRecordsPerPageChange(Number(value))}
+        >
+          <SelectTrigger className="w-[100px]">
+            <SelectValue placeholder={`${recordsPerPage}`} />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="5">5</SelectItem>
+            <SelectItem value="10">10</SelectItem>
+            <SelectItem value="20">20</SelectItem>
+            <SelectItem value="50">50</SelectItem>
+          </SelectContent>
+        </Select>
       </div>
-    </div>
-  )
-}
 
-export default CustomPagination
+      {/* ShadCN Pagination */}
+      <Pagination>
+        <PaginationContent>
+          {/* Previous Button */}
+          <PaginationItem>
+            <PaginationPrevious
+              onClick={() => onPageChange(currentPage - 1)}
+              disabled={currentPage === 1}
+            >
+              Previous
+            </PaginationPrevious>
+          </PaginationItem>
+
+          {/* Page Numbers */}
+          {Array.from({ length: totalPages }, (_, index) => (
+            <PaginationItem key={index}>
+              <PaginationLink
+                isActive={currentPage === index + 1}
+                onClick={() => onPageChange(index + 1)}
+              >
+                {index + 1}
+              </PaginationLink>
+            </PaginationItem>
+          ))}
+
+          {/* Next Button */}
+          <PaginationItem>
+            <PaginationNext
+              onClick={() => onPageChange(currentPage + 1)}
+              disabled={currentPage === totalPages}
+            >
+              Next
+            </PaginationNext>
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    </div>
+  );
+};
+
+export default CustomPagination;
