@@ -134,6 +134,8 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
     },
   });
 
+  console.log(updateUserMutation.isLoading);
+
   // Handle form submission
   const onSubmit: SubmitHandler<UserFormInputs> = (data) => {
     if (mode === "create") {
@@ -230,10 +232,10 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
           <div className="flex gap-4">
             <Button
               type="submit"
-              disabled={createUserMutation.isLoading || updateUserMutation.isLoading}
+              disabled={createUserMutation.isPending || updateUserMutation.isPending}
               className="flex items-center justify-center gap-2"
             >
-              {(createUserMutation.isLoading || updateUserMutation.isLoading) ? (
+              {(createUserMutation.isPending || updateUserMutation.isPending) ? (
                 <>
                   <LoaderCircle className="animate-spin h-4 w-4" />
                   Saving...
