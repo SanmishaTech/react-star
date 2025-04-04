@@ -240,46 +240,48 @@ const UserList = () => {
 			<Card className='mx-auto mt-6 sm:mt-10'>
 				<CardContent>
 					{/* Toolbar */}
-					<div className='flex flex-wrap gap-4 mb-6'>
-						<div className='flex flex-wrap items-center gap-2 w-full sm:w-auto'>
+					<div className="flex flex-wrap gap-4 mb-6">
+						{/* Search Input */}
+						<div className="flex-grow">
 							<Input
-								placeholder='Search users...'
+								placeholder="Search users..."
 								value={search}
 								onChange={handleSearchChange}
-								className='w-full sm:w-[300px]'
-								icon={<Search className='h-4 w-4' />}
+								className="w-full"
+								icon={<Search className="h-4 w-4" />}
 							/>
 						</div>
 
-						<div className='flex flex-wrap items-center gap-2 w-full sm:w-auto ml-auto'>
+						{/* Action Buttons */}
+						<div className="flex flex-wrap items-center gap-2">
 							<Button
-								variant='outline'
+								variant="outline"
 								className={`${
-									roles.length > 0 || active !== 'all' ? 'bg-blue-50' : ''
+									roles.length > 0 || active !== "all" ? "bg-blue-50" : ""
 								}`}
 								onClick={() => setShowFilters(!showFilters)}
 							>
-								<Filter className='mr-2 h-4 w-4' />
+								<Filter className="mr-2 h-4 w-4" />
 								Filters
-								{(roles.length > 0 || active !== 'all') && (
-									<span className='ml-2 bg-blue-500 text-white rounded-full px-2 py-0.5 text-xs'>
-										{roles.length + (active !== 'all' ? 1 : 0)}
+								{(roles.length > 0 || active !== "all") && (
+									<span className="ml-2 bg-blue-500 text-white rounded-full px-2 py-0.5 text-xs">
+										{roles.length + (active !== "all" ? 1 : 0)}
 									</span>
 								)}
 							</Button>
 							<Button
-								variant='outline'
+								variant="outline"
 								onClick={handleExport}
 								disabled={isLoading || users.length === 0}
 							>
-								<Download className='mr-2 h-4 w-4' />
+								<Download className="mr-2 h-4 w-4" />
 								Export
 							</Button>
 							<Button
-								onClick={() => navigate('/users/create')}
-								className='bg-primary hover:bg-primary/90 text-white shadow-sm transition-all duration-200 hover:shadow-md'
+								onClick={() => navigate("/users/create")}
+								className="bg-primary hover:bg-primary/90 text-white shadow-sm transition-all duration-200 hover:shadow-md"
 							>
-								<PlusCircle className='mr-2 h-5 w-5' />
+								<PlusCircle className="mr-2 h-5 w-5" />
 								Create
 							</Button>
 						</div>
@@ -287,27 +289,26 @@ const UserList = () => {
 
 					{/* Collapsible Filters Section */}
 					{showFilters && (
-						<Card className='p-4 bg-gray-50'>
-							<div className='flex flex-wrap gap-4'>
-								<div className='w-full sm:w-1/3'>
-									<label className='text-sm font-medium mb-1 block'>
-										Status
-									</label>
+						<Card className="p-4">
+							<div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+								{/* Status Filter */}
+								<div>
+									<label className="text-sm font-medium mb-1 block">Status</label>
 									<Select value={active} onValueChange={handleActiveChange}>
 										<SelectTrigger>
-											<SelectValue placeholder='Filter by status' />
+											<SelectValue placeholder="Filter by status" />
 										</SelectTrigger>
 										<SelectContent>
-											<SelectItem value='all'>All Users</SelectItem>
-											<SelectItem value='true'>Active Users</SelectItem>
-											<SelectItem value='false'>Inactive Users</SelectItem>
+											<SelectItem value="all">All Users</SelectItem>
+											<SelectItem value="true">Active Users</SelectItem>
+											<SelectItem value="false">Inactive Users</SelectItem>
 										</SelectContent>
 									</Select>
 								</div>
-								<div className='w-full sm:w-2/3'>
-									<label className='text-sm font-medium mb-1 block'>
-										Roles
-									</label>
+
+								{/* Roles Filter */}
+								<div>
+									<label className="text-sm font-medium mb-1 block">Roles</label>
 									{availableRoles.length > 0 ? (
 										<MultipleSelector
 											defaultOptions={availableRoles}
@@ -316,30 +317,30 @@ const UserList = () => {
 												value: role,
 											}))}
 											onChange={handleRoleChange}
-											placeholder='Select roles'
-										/>
-									) : (
-										<div className='h-10 flex items-center text-gray-500'>
-											<Loader className='mr-2 h-4 w-4 animate-spin' />
-											Loading roles...
-										</div>
-									)}
+												placeholder="Select roles"
+											/>
+										) : (
+											<div className="h-10 flex items-center text-gray-500">
+												<Loader className="mr-2 h-4 w-4 animate-spin" />
+												Loading roles...
+											</div>
+										)}
 								</div>
 							</div>
-							{(roles.length > 0 || active !== 'all') && (
-								<div className='flex justify-end mt-4'>
-									<Button
-										variant='ghost'
-										size='sm'
-										onClick={() => {
-											setRoles([]);
-											setActive('all');
-										}}
-									>
-										Clear Filters
-									</Button>
-								</div>
-							)}
+
+							{/* Clear Filters Button */}
+							<div className="flex justify-end mt-4">
+								<Button
+									size="sm"
+									onClick={() => {
+										setSearch("");
+										setRoles([]);
+										setActive("all");
+									}}
+								>
+									Clear Filters
+								</Button>
+							</div>
 						</Card>
 					)}
 
@@ -355,19 +356,19 @@ const UserList = () => {
 							Failed to load users.
 						</div>
 					) : users.length > 0 ? (
-						<div className='overflow-x-auto'>
+						<div className="overflow-x-auto">
 							<Table>
 								<TableHeader>
 									<TableRow>
 										<TableHead
-											onClick={() => handleSort('name')}
-											className='cursor-pointer'
+											onClick={() => handleSort("name")}
+											className="cursor-pointer"
 										>
-											<div className='flex items-center'>
+											<div className="flex items-center">
 												<span>Name</span>
-												{sortBy === 'name' && (
-													<span className='ml-1'>
-														{sortOrder === 'asc' ? (
+												{sortBy === "name" && (
+													<span className="ml-1">
+														{sortOrder === "asc" ? (
 															<ChevronUp size={16} />
 														) : (
 															<ChevronDown size={16} />
@@ -377,14 +378,14 @@ const UserList = () => {
 											</div>
 										</TableHead>
 										<TableHead
-											onClick={() => handleSort('email')}
-											className='cursor-pointer'
+											onClick={() => handleSort("email")}
+											className="cursor-pointer"
 										>
-											<div className='flex items-center'>
+											<div className="flex items-center">
 												<span>Email</span>
-												{sortBy === 'email' && (
-													<span className='ml-1'>
-														{sortOrder === 'asc' ? (
+												{sortBy === "email" && (
+													<span className="ml-1">
+														{sortOrder === "asc" ? (
 															<ChevronUp size={16} />
 														) : (
 															<ChevronDown size={16} />
@@ -394,14 +395,14 @@ const UserList = () => {
 											</div>
 										</TableHead>
 										<TableHead
-											onClick={() => handleSort('role')}
-											className='cursor-pointer'
+											onClick={() => handleSort("role")}
+											className="cursor-pointer"
 										>
-											<div className='flex items-center'>
+											<div className="flex items-center">
 												<span>Role</span>
-												{sortBy === 'role' && (
-													<span className='ml-1'>
-														{sortOrder === 'asc' ? (
+												{sortBy === "role" && (
+													<span className="ml-1">
+														{sortOrder === "asc" ? (
 															<ChevronUp size={16} />
 														) : (
 															<ChevronDown size={16} />
@@ -411,14 +412,14 @@ const UserList = () => {
 											</div>
 										</TableHead>
 										<TableHead
-											onClick={() => handleSort('lastLogin')}
-											className='cursor-pointer'
+											onClick={() => handleSort("lastLogin")}
+											className="cursor-pointer"
 										>
-											<div className='flex items-center'>
+											<div className="flex items-center">
 												<span>Last Login</span>
-												{sortBy === 'lastLogin' && (
-													<span className='ml-1'>
-														{sortOrder === 'asc' ? (
+												{sortBy === "lastLogin" && (
+													<span className="ml-1">
+														{sortOrder === "asc" ? (
 															<ChevronUp size={16} />
 														) : (
 															<ChevronDown size={16} />
@@ -428,14 +429,14 @@ const UserList = () => {
 											</div>
 										</TableHead>
 										<TableHead
-											onClick={() => handleSort('active')}
-											className='cursor-pointer'
+											onClick={() => handleSort("active")}
+											className="cursor-pointer"
 										>
-											<div className='flex items-center'>
+											<div className="flex items-center">
 												<span>Active</span>
-												{sortBy === 'active' && (
-													<span className='ml-1'>
-														{sortOrder === 'asc' ? (
+												{sortBy === "active" && (
+													<span className="ml-1">
+														{sortOrder === "asc" ? (
 															<ChevronUp size={16} />
 														) : (
 															<ChevronDown size={16} />
@@ -453,39 +454,39 @@ const UserList = () => {
 											<TableCell>{user.name}</TableCell>
 											<TableCell>{user.email}</TableCell>
 											<TableCell>
-												<Badge variant='outline'>{user.role}</Badge>
+												<Badge variant="outline">{user.role}</Badge>
 											</TableCell>
 											<TableCell>
 												{user.lastLogin
 													? new Date(user.lastLogin).toLocaleString()
-													: 'Never'}
+													: "Never"}
 											</TableCell>
 											<TableCell>
 												{user.active ? (
-													<Badge variant='outline'>Active</Badge>
+													<Badge variant="outline">Active</Badge>
 												) : (
-													<Badge variant='secondary'>Inactive</Badge>
+													<Badge variant="secondary">Inactive</Badge>
 												)}
 											</TableCell>
 											<TableCell>
-												<div className='flex gap-2'>
+												<div className="flex gap-2">
 													<Button
-														variant='outline'
-														size='sm'
+														variant="outline"
+														size="sm"
 														onClick={() => navigate(`/users/${user.id}/edit`)}
 													>
 														<Edit size={16} />
 													</Button>
 													<ConfirmDialog
-														title='Confirm Deletion'
-														description='Are you sure you want to delete this user? This action cannot be undone.'
-														confirmLabel='Delete'
-														cancelLabel='Cancel'
+														title="Confirm Deletion"
+														description="Are you sure you want to delete this user? This action cannot be undone."
+														confirmLabel="Delete"
+														cancelLabel="Cancel"
 														onConfirm={() => handleDelete(user.id)}
 													>
 														<Button
-															variant='destructive'
-															size='sm'
+															variant="destructive"
+															size="sm"
 															onClick={() => confirmDelete(user.id)}
 														>
 															<Trash2 size={16} />
@@ -493,36 +494,34 @@ const UserList = () => {
 													</ConfirmDialog>
 													<DropdownMenu>
 														<DropdownMenuTrigger asChild>
-															<Button variant='ghost' className='h-8 w-8 p-0'>
-																<span className='sr-only'>Open menu</span>
-																<MoreHorizontal className='h-4 w-4' />
+															<Button variant="ghost" className="h-8 w-8 p-0">
+																<span className="sr-only">Open menu</span>
+																<MoreHorizontal className="h-4 w-4" />
 															</Button>
 														</DropdownMenuTrigger>
-														<DropdownMenuContent className='w-56'>
+														<DropdownMenuContent className="w-56">
 															<DropdownMenuGroup>
 																<DropdownMenuItem
 																	onClick={() =>
 																		handleChangeStatus(user.id, user.active)
 																	}
 																>
-																	<div className='flex items-center gap-2'>
+																	<div className="flex items-center gap-2">
 																		{user.active ? (
-																			<XCircle className='h-4 w-4' />
+																			<XCircle className="h-4 w-4" />
 																		) : (
-																			<CheckCircle className='h-4 w-4' />
+																			<CheckCircle className="h-4 w-4" />
 																		)}
 																		<span>
-																			Set {user.active ? 'Inactive' : 'Active'}
+																			Set {user.active ? "Inactive" : "Active"}
 																		</span>
 																	</div>
 																</DropdownMenuItem>
 																<DropdownMenuItem
-																	onClick={() =>
-																		handleOpenChangePassword(user.id)
-																	}
+																	onClick={() => handleOpenChangePassword(user.id)}
 																>
-																	<div className='flex items-center gap-2'>
-																		<ShieldEllipsis className='h-4 w-4' />
+																	<div className="flex items-center gap-2">
+																		<ShieldEllipsis className="h-4 w-4" />
 																		<span>Change Password</span>
 																	</div>
 																</DropdownMenuItem>

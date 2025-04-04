@@ -41,7 +41,7 @@ const userFormSchema = Joi.object({
   role: Joi.string().required().messages({
     "string.empty": "Role is required",
   }),
-  active: Joi.boolean().required(),
+  active: Joi.boolean().optional()
 });
 
 const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
@@ -108,8 +108,12 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
       queryClient.invalidateQueries(["users"]); // Refetch the users list
       navigate("/users");
     },
-    onError: () => {
-      toast.error("Failed to create user");
+    onError: (error: any) => {
+      if (error.message) {
+        toast.error(error.message);      
+      } else {
+        toast.error("Failed to create user");
+      }
     },
   });
 
@@ -121,8 +125,12 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
       queryClient.invalidateQueries(["users"]); // Refetch the users list
       navigate("/users");
     },
-    onError: () => {
-      toast.error("Failed to update user");
+    onError: (error: any) => {
+      if (error.message) {
+        toast.error(error.message);      
+      } else {
+        toast.error("Failed to create user");
+      }
     },
   });
 
@@ -215,7 +223,7 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
                 checked={active}
                 onCheckedChange={(checked) => setValue("active", checked)}
               />
-            </div>
+            </div>       
           </div>
 
           {/* Submit and Cancel Buttons */}

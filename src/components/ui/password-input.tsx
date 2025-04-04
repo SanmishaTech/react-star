@@ -20,6 +20,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, InputProps>(
           ref={ref} // Forward the ref for react-hook-form
           onChange={onChange} // Pass onChange for react-hook-form
           onBlur={onBlur} // Pass onBlur for react-hook-form
+          autoComplete="new-password" // Add autocomplete attribute
           {...props}
         />
 
