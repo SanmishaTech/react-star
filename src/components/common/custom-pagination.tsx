@@ -67,12 +67,13 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
         <PaginationContent>
           {/* Previous Button */}
           <PaginationItem>
-            <PaginationPrevious
-              onClick={() => onPageChange(currentPage - 1)}
-              disabled={currentPage === 1}
-            >
+            {currentPage !== 1 ? (
+              <PaginationPrevious onClick={() => onPageChange(currentPage - 1)}>
               Previous
             </PaginationPrevious>
+            ) : (
+              <PaginationPrevious isActive={false}>Previous</PaginationPrevious>
+            )}
           </PaginationItem>
 
           {/* Page Numbers */}
@@ -89,12 +90,13 @@ const CustomPagination: React.FC<CustomPaginationProps> = ({
 
           {/* Next Button */}
           <PaginationItem>
-            <PaginationNext
-              onClick={() => onPageChange(currentPage + 1)}
-              disabled={currentPage === totalPages}
-            >
-              Next
-            </PaginationNext>
+            {currentPage < totalPages ? (
+              <PaginationNext onClick={() => onPageChange(currentPage + 1)}>
+                Next
+              </PaginationNext>
+            ) : (
+              <PaginationNext isActive={false}>Next</PaginationNext>
+            )}
           </PaginationItem>
         </PaginationContent>
       </Pagination>
