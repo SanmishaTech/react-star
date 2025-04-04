@@ -6,7 +6,8 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui";
-import { PasswordInput } from '@/components/ui/password-input';
+import { PasswordInput } from "@/components/ui/password-input";
+import { useMutation } from "@tanstack/react-query"; // Import useMutation
 import { patch } from "@/services/apiService"; // Import the patch method
 import { toast } from "sonner"; // Import toast for notifications
 import Joi from "joi"; // Import Joi for validation
@@ -24,11 +25,10 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
 }) => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [loading, setLoading] = useState(false); // State to track API call status
 
   // Joi schema for password validation
   const schema = Joi.object({
-    newPassword: Joi.string().min(8).required().label("New Password"),
+    newPassword: Joi.string().min(6).required().label("New Password"),
     confirmPassword: Joi.string()
       .valid(Joi.ref("newPassword"))
       .required()
@@ -36,7 +36,20 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
       .messages({ "any.only": "Passwords do not match!" }),
   });
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  // Mutation for changing the password
+  const changePasswordMutation = useMutation({
+    mutationFn: (password: string) =>
+      patch(`/users/${userId}/password`, { password }),
+    onSuccess: () => {
+      toast.success("Password changed successfully!");
+      onClose(); // Close the dialog after success
+    },
+    onError: () => {
+      toast.error("Failed to change password. Please try again.");
+    },
+  });
+
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     // Validate passwords using Joi
@@ -46,20 +59,8 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
       return;
     }
 
-    try {
-      setLoading(true); // Start loading
-      await patch(`/users/${userId}/password`, {
-        password: newPassword,
-      });
-
-      toast.success("Password changed successfully!");
-      onClose(); // Close the dialog after success
-    } catch (error) {
-      console.error("Error changing password:", error);
-      toast.error("Failed to change password. Please try again.");
-    } finally {
-      setLoading(false); // Stop loading
-    }
+    // Trigger the mutation
+    changePasswordMutation.mutate(newPassword);
   };
 
   return (
@@ -86,11 +87,18 @@ const ChangePasswordDialog: React.FC<ChangePasswordDialogProps> = ({
             />
           </div>
           <div className="flex justify-end gap-2 mt-4">
-            <Button variant="secondary" onClick={onClose} disabled={loading}>
+            <Button
+              variant="secondary"
+              onClick={onClose}
+              disabled={changePasswordMutation.isLoading}
+            >
               Cancel
             </Button>
-            <Button type="submit" variant="primary" disabled={loading}>
-              {loading ? "Changing..." : "Change Password"}
+            <Button
+              type="submit"
+              disabled={changePasswordMutation.isLoading}
+            >
+              {changePasswordMutation.isLoading ? "Changing..." : "Change Password"}
             </Button>
           </div>
         </form>

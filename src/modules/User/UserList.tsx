@@ -20,7 +20,7 @@ import {
 	TableRow,
 } from '@/components/ui/table';
 import { useNavigate } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { get, del, patch } from '@/services/apiService';
 import { toast } from 'sonner';
 import { Separator } from '@/components/ui/separator';
@@ -69,6 +69,7 @@ const fetchUsers = async (
 };
 
 const UserList = () => {
+	const queryClient = useQueryClient();
 	const [currentPage, setCurrentPage] = useState(1);
 	const [recordsPerPage, setRecordsPerPage] = useState(10); // Add recordsPerPage state
 	const [sortBy, setSortBy] = useState('name'); // Default sort column
@@ -115,23 +116,46 @@ const UserList = () => {
 	const totalPages = data?.totalPages || 1;
 	const totalUsers = data?.totalUsers || 0;
 
-	// Handle user deletion
-	const handleDelete = async (id: number) => {
-		try {
-			await del(`/users/${id}`);
-			toast.success('User deleted successfully');
-			refetch(); // Refetch users after deletion
-		} catch {
-			toast.error('Failed to delete user');
-		} finally {
+	// Mutation for deleting a user
+	const deleteUserMutation = useMutation({
+		mutationFn: (id: number) => del(`/users/${id}`),
+		onSuccess: () => {
+			toast.success("User deleted successfully");
+			queryClient.invalidateQueries(["users"]);
+		},
+		onError: () => {
+			toast.error("Failed to delete user");
+		},
+	});
+
+	const confirmDelete = (id: number) => {
+		setUserToDelete(id);
+		setShowConfirmation(true);
+	};
+
+	const handleDelete = () => {
+		if (userToDelete) {
+			deleteUserMutation.mutate(userToDelete);
 			setShowConfirmation(false);
 			setUserToDelete(null);
 		}
 	};
 
-	const confirmDelete = (id: number) => {
-		setUserToDelete(id);
-		setShowConfirmation(true);
+	// Mutation for changing user status
+	const changeStatusMutation = useMutation({
+		mutationFn: ({ userId, active }: { userId: string; active: boolean }) =>
+			patch(`/users/${userId}/status`, { active }),
+		onSuccess: () => {
+			toast.success("User status updated successfully");
+			queryClient.invalidateQueries(["users"]);
+		},
+		onError: () => {
+			toast.error("Failed to update user status");
+		},
+	});
+
+	const handleChangeStatus = (userId: string, currentStatus: boolean) => {
+		changeStatusMutation.mutate({ userId, active: !currentStatus });
 	};
 
 	// Handle sorting
@@ -195,27 +219,6 @@ const UserList = () => {
 		} catch (error) {
 			console.error('Export Error:', error);
 			toast.error('Failed to export user data');
-		}
-	};
-
-	const handleChangeStatus = async (userId: string, currentStatus: boolean) => {
-		try {
-			// Make API call to toggle the user's active status
-			await patch(`/users/${userId}/status`, {
-				active: !currentStatus, // Toggle the current status
-			});
-
-			// Show success message
-			toast.success(
-				`User status updated to ${!currentStatus ? 'Active' : 'Inactive'}!`
-			);
-			refetch();
-
-			// Optionally, refresh the user list or update the UI
-			// Example: fetchUsers(); or updateUserStatus(userId, !currentStatus);
-		} catch (error) {
-			// Show error message
-			toast.error('Failed to update user status. Please try again.');
 		}
 	};
 
@@ -567,11 +570,7 @@ const UserList = () => {
 					setShowConfirmation(false);
 					setUserToDelete(null);
 				}}
-				onConfirm={() => {
-					if (userToDelete) {
-						handleDelete(userToDelete);
-					}
-				}}
+				onConfirm={handleDelete}
 			/>
 		</div>
 	);

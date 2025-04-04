@@ -11,7 +11,10 @@ import { Switch } from "@/components/ui/switch";
 import { LoaderCircle } from "lucide-react"; // Import the LoaderCircle icon
 import { toast } from "sonner";
 import { useNavigate, useParams } from "react-router-dom";
-import { get, post, put } from "@/services/apiService";
+import { get } from "@/services/apiService";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { post, put } from "@/services/apiService";
+import { PasswordInput } from '@/components/ui/password-input';
 
 type UserFormInputs = {
   name: string;
@@ -43,9 +46,10 @@ const userFormSchema = Joi.object({
 
 const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
   const { id } = useParams<{ id: string }>();
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingRoles, setIsLoadingRoles] = useState(false);
   const [roles, setRoles] = useState<string[]>([]); // Roles fetched from API
   const navigate = useNavigate();
+  const queryClient = useQueryClient();
 
   const {
     register,
@@ -63,11 +67,14 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
   useEffect(() => {
     const fetchRoles = async () => {
       try {
+        setIsLoadingRoles(true);
         const rolesData = await get("/roles");
         const formattedRoles = Object.values(rolesData.roles); // Use only role values
         setRoles(formattedRoles);
       } catch (error: any) {
         toast.error("Failed to fetch roles");
+      } finally {
+        setIsLoadingRoles(false);
       }
     };
 
@@ -78,7 +85,6 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
   useEffect(() => {
     if (mode === "edit" && id) {
       const fetchUser = async () => {
-        setIsLoading(true);
         try {
           const user = await get(`/users/${id}`);
           setValue("name", user.name);
@@ -87,8 +93,6 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
           setValue("active", user.active);
         } catch (error: any) {
           toast.error("Failed to fetch user details");
-        } finally {
-          setIsLoading(false);
         }
       };
 
@@ -96,22 +100,38 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
     }
   }, [id, mode, setValue]);
 
-  // Handle form submission
-  const onSubmit: SubmitHandler<UserFormInputs> = async (data) => {
-    setIsLoading(true);
-    try {
-      if (mode === "create") {
-        await post("/users", data);
-        toast.success("User created successfully");
-      } else {
-        await put(`/users/${id}`, data);
-        toast.success("User updated successfully");
-      }
+  // Mutation for creating a user
+  const createUserMutation = useMutation({
+    mutationFn: (data: UserFormInputs) => post("/users", data),
+    onSuccess: () => {
+      toast.success("User created successfully");
+      queryClient.invalidateQueries(["users"]); // Refetch the users list
       navigate("/users");
-    } catch (error: any) {
-      toast.error("Failed to save user");
-    } finally {
-      setIsLoading(false);
+    },
+    onError: () => {
+      toast.error("Failed to create user");
+    },
+  });
+
+  // Mutation for updating a user
+  const updateUserMutation = useMutation({
+    mutationFn: (data: UserFormInputs) => put(`/users/${id}`, data),
+    onSuccess: () => {
+      toast.success("User updated successfully");
+      queryClient.invalidateQueries(["users"]); // Refetch the users list
+      navigate("/users");
+    },
+    onError: () => {
+      toast.error("Failed to update user");
+    },
+  });
+
+  // Handle form submission
+  const onSubmit: SubmitHandler<UserFormInputs> = (data) => {
+    if (mode === "create") {
+      createUserMutation.mutate(data); // Trigger create mutation
+    } else {
+      updateUserMutation.mutate(data); // Trigger update mutation
     }
   };
 
@@ -151,9 +171,8 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
           {mode === "create" && (
             <div className="grid gap-2">
               <Label htmlFor="password">Password</Label>
-              <Input
+              <PasswordInput
                 id="password"
-                type="password"
                 placeholder="Enter a secure password"
                 {...register("password")}
               />
@@ -201,8 +220,12 @@ const UserForm = ({ mode }: { mode: "create" | "edit" }) => {
 
           {/* Submit and Cancel Buttons */}
           <div className="flex gap-4">
-            <Button type="submit" disabled={isLoading} className="flex items-center justify-center gap-2">
-              {isLoading ? (
+            <Button
+              type="submit"
+              disabled={createUserMutation.isLoading || updateUserMutation.isLoading}
+              className="flex items-center justify-center gap-2"
+            >
+              {(createUserMutation.isLoading || updateUserMutation.isLoading) ? (
                 <>
                   <LoaderCircle className="animate-spin h-4 w-4" />
                   Saving...
